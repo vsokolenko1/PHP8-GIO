@@ -1,0 +1,296 @@
+/**
+ * PHP PDO Tutorial Part 2 - Transactions - Env Variables & PHPDotEnv
+ * 
+ * In this lesson, we continue with the PDO & MySQL and learn about transactions.
+ * In addition to transactions, you will also learn where & how to store your 
+ * database credentials using environment variables.
+ */
+
+/**
+ * Intro
+ * 0:00
+ * In the last couple lessons you learned is six mysql how connect to db using
+ * PDO you learn the buddies injections and so on.
+ * In this video let's dive bit deeper explore other things related working with
+ * db is like db transactions, how to use config file, or env files instead of
+ * hardcode in db credentionals, and so on.
+ * Before we get started I want to address a couple of things a broad up to my attantion
+ * related to the previous video lesson. The first concern was that the pass s variable directly 
+ * in the variable right here instead of using prepare statements. Let me clarify what I meant
+ * because I deep colouds some parts from that last video while editing related 
+ * to this exact things.
+ * Simply because I think that is important but now I see that I should propably
+ * captured and you whenever to address this concern. First let me say I do 
+ * completly and agree encoragues that you should use prepare statements 
+ * whenever you can. 
+ * 1:00
+ * There is no reason to 
+ * inject variables into queries directly like this even when the data is internal.
+ * Unless of course the place you injection to doesn't to support placeholders or
+ * name parameters. In which case you would take other measure like white listing for
+ * example to ensure the save of data & queries. That been said the context and 
+ * intent matters. The only reason I even have this query to begin with to was
+ *  to simply avoid jumping back and for with mysql workbench to confirm that user
+ * was created on ever page refresh. Waisteen both your and my time. It would 
+ * simpler to just queried the data and displayed right here on the screen. 
+ * This queries served other purpoes and you would see that it follow in video because I
+ * don't even use an have that query error. But still the I could of probably fraise a bit 
+ * friendly or even used prepare statements to avoid confusion. You can think of this
+ * query as a debug statement it was simpler and one less line of code to use query method 
+ * instead of preparing it an executing the query. Yes there is a second sql injection keys
+ * but we're not storing in data or selection in a data where injection into the query.
+ * 2:00
+ * We simply cast in an id into an integer and passing an integer into to the query.
+ * But I should of clirify than fraise be better or not could out the part the 
+ * left out from the last lesson which
+ * would made more sense. Also noted that some videos have follow videos and some videos are
+ * splitting multiple parts like pdo lesson. this is the part two so jujing something from
+ * the single video is point less sence have or already been address the next video which print
+ * make next concern the was brod up
+ * concern was that I should only have pdo connection part within the try catch block and not include
+ * all of this other call within it. because if one of this query still an exceptions we coded
+ * and we will throw the exceptions again. We would be point less. And 100% would that
+ * and in fact in the follow video which is this video, that your about to see. and we
+ * throws recorded before this concern arrays and it would notices that id exect same thing
+ * and simply put pdo connection to try catch block and move that a queries out it.
+ * which cause back to the point to made earliea. 
+ * 3:00
+ * As i mention before the pdo lesson was
+ * split into multiply videos I relelies that while editing the first video that I got away while talking about
+ * the importing stuff. Simply continue riding queries with the same try catch block.
+ * Once relelise that I fix it and that fix is within a part to of the lesson which is this video.
+ * Either way I did nothing either of this things wherever big deal, but since was brought up 
+ * to made decided to added this video which is already prerecoreded and address them here. I am totally open 
+ * to credises as longest as construct but taking things of context and be negative and not call.
+ * It would be a lot better and nice serve to the person who reach out to made to rase this concerns a bit differenty. For example
+ * would been hundred times better if comment with this concerns  where posted in the last video on the youtube.
+ * That way a would addressed this there and every one else could state of the opinions. you could nice product even interesting
+ * conversations or db. I take this channel and my content seriously and I listen to my viewourus
+ * where to feedback is good or bad and I precious all of kinds feedback There is why I did not ignore
+ * 4:00
+ * this concern which a could of done, but instead I decided to address them and clyrify and make things clear. 
+ * I do apologies for take in few exterminate of your time. So let's continue to the lesson. 
+ */
+
+/**
+ * Database Transactions
+ * 
+ * *************II*************
+ * Let's start with a database Transactions
+ * In simple turn a transaction is kind of like a siquence one of more sql 
+ * statements or operations that are treated as the whole or as unit.
+ * A classic example did you mind 
+ * across where you used be transaction is when transfering money one account to
+ * another. Like transfering checkings account to savings account. You would 
+ * have a list two queries. One to decrease the checkings account balance and 
+ * one to a increase save the account balance. And did you may have some addition
+ * queries probably one maybe to log this action summury a table code transfering
+ * or transactions and so on. The queries would looks somethings like this:
+ * so you would have the first query to update checkings_accounts table, where
+ * decrement balance by 2000$ for example for specific account number
+ * - update checkings_accounts
+ * - set balance = balance - 2000 
+ * - where account_number = '777777';
+ * 5:00
+ * Then you have the second query where you are updated savings accounts increasing or incrementing the balance by 2000
+ * for specific account:
+ * - update checkings_accounts
+ * - set balance = balance + 2000 
+ * - where account_number = '777777';
+ * and then third query would be;
+ * - insert into transfers (`from_acc`, `to_acc`, `amount`, `date`)
+ * - values ('777777', '777778', 2000, NOW());
+ * Insert to transfers Table loging this transactions or this action. What
+ * happens if the first query was successful and decrease the balance on the
+ * checkings_accounts by 2000$, but then something wrong before it have change
+ * execute the second query to increase the savings balance 2000$? Or maybe
+ * if fail do while executing the second query. This means that your checkings_accounts
+ * would decrease by 2000$ and the save the account not increase by 2000$. And there
+ * for you would be short of to 2000$
+ * So if you looked queries again we see that we have a sequence the queries
+ * that has to be executed at the same time while each query is depending on the
+ * success of another query. Meaning that one of them fail to execute for 
+ * whatever reason whole sequence of queries or whole batch queries would need 
+ * to revert the actions and go back to the original state.
+ * 6:00
+ * this is where transactions can help we can wrap this process in a 
+ * transactions. And you can see of this is a kind of box or unit that contains
+ * all query where you will begin transaction write before that start fo the
+ * sequence of before running the first query and then and the sequence if there
+ * are no errors it would be commit to sequence or batch queries which means the
+ * only that point would actually updated tables at once. if fail it point to
+ * execute any it would be able to easily to rollback to entirely sequence batch
+ * of queries. Now I know classic example but we can also apply to a more relies
+ * example unless of course your building of banking app, in which case for example
+ * there are told would to apply. Let's think of another an example. Let's say
+ * you have a four users sing up or register and select subscription plan.
+ * user this request you would like run queries. 
+ * 7:00
+ * One query would be to created user in the users table. Another query would be to
+ * create at the subscriptions table and associated user with the suscription 
+ * for example. They you will have another query to log entire request maybe 
+ * another query to save the invoice in generated process as a result of this 
+ * action and so on. So you would to run quite few queries right. Now we  though
+ * transactions if error happen at any point you would be left within consistent
+ * data. Where some table we're updated while some did not. Which transactions 
+ * however you could rollback all queries that are within the transaction or 
+ * commit them at the end if the were errors. Do note not all the databases or
+ * engines supports transactions. By the default engine on mysql which is innoDB
+ * does support transactions. Store engines are kind of compaunds in mysql that 
+ * handled sql operations depending on table types. InnoDB is a default one an 
+ * also it's a general purpose engine and it is commonly used.A specially if you 
+ * want foreign keys in transactions support. 
+ * 8:00
+ * MyISAM is another common an engine and used to be to the default one while to
+ * back but does not support foreign keys and transactions. Also InnoDB does 
+ * the rollable locking, while MyISAM that is table level locking. Also InnoDB
+ * is what as most of an used. And it's also the default once since MySQL 
+ * version 5.5 I think so you even to worry about specify and creating table.
+ * So let's choose transactions with PDO. I have modify the code the lit a bit
+ * from the last lesson. So let's go over it quick. We have the try catch block
+ * here, that handles the PDO connection. Then we have some data hard coded here
+ * an again.
+ * 
+ */
+
+/**
+ * Transactions with PDO
+ * This data could be coming from a form post or get superglobals and so on.
+ * Then we have two queries that we preparing one query creating to user, and another
+ * one to creating new invoice for that user. We're executing the user query here
+ * and then we getting the userId using the lastInsertId method and then we 
+ * executing new invoice statement pass in that userId, so that invoice can be created for
+ * that specific user. 
+ * 9:00 And finally to confirm that both user and invoice have been created. We have this
+ * query to fetch the data from both users and invoices table. So we're kind of 
+ * simulating user signing up while selecting subscription plan or something like that, so
+ * users signs up would create user and would be generating invoice and maybe 
+ * process it and so on. Now this all look good, but if something we're to go wrong at the second query
+ * right here and creating an invoices, this could cause some problems because 
+ * we're not using transactions, right? 
+ * Essentially what can happen is this query will get executed, and will created a new user
+ * account, but then if something work to go wrong the second query which creates invoice and
+ * maybe throw an the exception it would not creating an invoices and there for it would
+ * left user account, and was created without an invoices and then maybe you caught
+ * exception an issue the user some kind of error message asking them to retry again and then
+ * once user when back try to submit the form again would be the same information
+ * The user would get the different error indicating that user with that email already 
+ * exist.
+ * 10:00
+ * And again that is because this block here executed only partially and only user was
+ * created and not an invoice. We can solve this by using transactions so we begin
+ * the transaction here so we can call beginTransaction(); And then we can commit
+ * right after recreate the invoice. Now we also need to rollback the transaction
+ * if something look wrong. If an exception thrown and we're within this block
+ * here we need to catch the exception and rollback the transactions, so we can wrap
+ * this whole within in try catch block so we can do try and then catch and 
+ * \Throwable exception $db->rollback(); Now rollback method can also throw an
+ * exception if there is no active transaction an also begin transaction can
+ * throw an exception if it resolve ready transaction that is active. To be save
+ * alike to also add check here to make shure that we rollback when we have an active 
+ * transactions so we can check if the reason active transaction $db->inTransaction() using method
+ * only then we can call rollback method. 
+ * 11:00
+ * Please note that you should the throw exception within the catch block after 
+ * the if statement, I simply not going to do that here because I want to 
+ * execute select query below so we confirm a new user created. Now, let's try 
+ * this out and see this works. I'm going to refresh this page here and sure \
+ * enough we get invoice_id, the amount, user_id, and the full_name which means
+ * that both user and the invoice was created. We can simply throw an exception 
+ * before executing the second query to simulate something going wrong with the 
+ * second query. Let's do throw new \Exception('Test') and let's change the 
+ * email and name to jane and let's refresh the page. And sure enough we not
+ * getting anything back which indicates that either user nor invoice was 
+ * created. Please note, that you must call lastInsertId method before commit 
+ * method. If we for whatever within commited in transaction before using the 
+ * lastInsertId this will return zero. Let's var_dump($userId) here and let's 
+ * change email to something else so it does not given duplicate error.
+ * 12:00
+ * Let's refresh the page and you can see we're getting zero even though this
+ * technically executed successfully. If you open workbench and run then
+ * query to select all users, we see that j@doe.com was created successfully.
+ * So make sure that you call lastInsertId() before commit method. So let's revert this
+ * back remove this exception and let's move on. The controler is doing too much
+ * here an also we have this credential hard coded. The first we need to do is 
+ * that we need to remove the hard coded credential from here and move into 
+ * something called environment variables. 
+ */
+
+/**
+ * Environment variables & phpdotenv package
+ * 
+ * There are many benefits to using an environments variables and an environment
+ * false one on the maije benefit is that you are not hard coded credentional like
+ * this into the code and you're not commit that coding to the repository because as I
+ * mentioned will commit the coding to the repository right and even if this is private
+ * repository use to don't want you're database credential to be in your commit 
+ * history. So let's create .env files. I'm going to create to files one is 
+ * going to be .env file and another one is going to be .env.example 
+ * 13:00
+ * and the .env.example file is simply template the will contain all the 
+ * environment variable that is application needs, but well not contain the any
+ * of the values. The values would go to .env file. So this way you can commit 
+ * .env.example to the repository which will have no values it would just have 
+ * the variables and then you would add .env file to the gitignore list, so you
+ * would not commit to actually .env file. So let's so we need. We need
+ * DB_HOST=db
+ * DB_USER=root
+ * DB_PASS=root
+ * DB_DATABASE=my_db
+ * Now as I mentioned they .env.example file should not contain the any values. 
+ * So we need to copy this and move into .env.exemaple file we remove values and
+ * this is a file that you would be commit to repository and then you will 
+ * simply add .env file to the git ignore list. Now that we have this 
+ * environment variables we want to access to using env superglobals. So if we 
+ * var_dump the $_ENV('DB_HOST');
+ * 14:00
+ * For example, and refresh the page we going to get the undefined warning because 
+ * DB_HOST is does not exist yet. And it doesn't work because our environment file
+ * has not been loaded yet. We could use a third party package called phpdotenv
+ * to whole pass load the environment variables. So if we go to the git hub 
+ * repository php dotenv and scroll down we see the instruction to get an install, so 
+ * we copy composer...
+ * $ composer require vlucas/phpdotenv
+ * command and let's installed and in pull the few are dependcies
+ * and installed and let's keep scrolling and we see than we need to loaded the
+ * using this snipped of code here, so let's copy this and we need to put this 
+ * within entry point to
+ * the application and that is public/index.php in our case so let's open that
+ * and we can put right here (after require...). Now one thing to note here
+ * is that this will try to located .env file within the current directory
+ * of the index.php, but that not our env files are, and our env file is within
+ * the root directory, so we need to go one level above. We could simply use 
+ * dirname function to get the path of the parent directory.
+ * 15:00
+ * And this should work. Now if we go back to the localhost and refresh the page
+ * we're getting this error that is not able to located .env file. And that is
+ * probably I created env file in wrong location, so we need created them within
+ * src directory, so I need to move it into src directory here, and now it 
+ * should work. I refresh the page we see that it has loaded the environment 
+ * variable and we can access to using the env superglobal. Now do note that you
+ * can have last other environment variables within in env files and doesn't 
+ * have just contain the databases credentials you can put API credentials there
+ * and put some configuration related values there and so on. You can even deal 
+ * the config class there would read environment variables values and store in 
+ * them in some kind of array and then cache that data and an user config class 
+ * will to access the data and not use the env superglobal directly. And now 
+ * we could easily replace this with $_ENV variables instead of hard coding them
+ * here. 
+ * 16:00
+ * If I refresh the page everything work and we're getting false because throw 
+ * duplicated exception cause where try to create the user with a same email
+ * address we're already created before. Let the good thing is that our 
+ * connection works and this did not throw an exceptions. You could even extract
+ * this mysql driver into the environment variable and put that in the env 
+ * superglobal if you want it to. You can redact more in the phpdotenv package 
+ * there are some options and methods are available the can be useful. For 
+ * example you could make certain environment variables required check for 
+ * specific types only allows an values and so on. This is the video hope enjoy 
+ * that. Thank you for much for watching. If you have any questions or feedback 
+ * please post and down below. Otherwise I am going to see you and the next 
+ * video we're were going to clean this up a little bit because right now 
+ * recreate looks pretty ugly right. Our controller noise and does to much it 
+ * noise how to connect to the database it runs query comminucates to view and 
+ * so on. So we're going fix that out in the next video. So thanks again hit the
+ * like the button if you enjoy it share, subscribe and I'll see you next time.
+ */
