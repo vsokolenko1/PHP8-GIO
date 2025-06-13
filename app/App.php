@@ -112,35 +112,6 @@ function calculateTotals(array $transactions): array {
     return $totals;
 }
 
-/**
- * Save data with formatted fields
- * @param array $transactions
- * @return array|null
- */
-function saveData (array $transactions): array {
-    
-    $keys = ['date', 'check', 'description', 'amount'];
-    
-    $data = [];
-    
-    foreach ($transactions as $row) {
-
-        //here need formatted amount- remove $ and , in amount value.
-        //todo change to preg_replace_callback_array.
-        $temp = explode('$', $row);
-        $temp[1] = str_replace([','], '', $temp[1]);
-        $row = implode('', $temp);
-        
-        //remove "" in amount
-        $row = str_replace('"', '', $row);
-        
-        $data[] = array_combine($keys, explode(',', $row));
-
-    }
-    
-    return $data;
-}
-
 function errorHandler(
         int $type,
         string $message,
