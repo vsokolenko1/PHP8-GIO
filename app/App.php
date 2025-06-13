@@ -39,8 +39,23 @@ function getTransactionsFiles (string $path): array {
     
 }
 
-function getTransactions(string $file): array{
+function getTransactions(string $file, ?callable $transactionHandler= null): ?array{
     
+    
+    if(!file_exists($file)) {
+        
+        trigger_error("Can't find the file: '$file'", E_USER_NOTICE);
+        
+        return null;
+    }
+    
+    if(!is_readable($file)) {
+    
+        trigger_error("Can't read the file: '$file'", E_USER_NOTICE);
+        
+        return null;
+        
+    }  
 
     $fh = fopen($file, 'r');
 
@@ -48,11 +63,30 @@ function getTransactions(string $file): array{
     
     while (($transaction = fgetcsv($fh)) !== false) {
         
-        $transactions[] = $transaction;
+        if($transactionHandler !== null) {
+        
+            $transactions[] = $transactionHandler($transaction);
+        
+        }
         
     }
 
     return $transactions;
+}
+
+function extractTransaction (array $transactionRow): array {
+    
+    [$date, $check, $description, $amount] = $transactionRow;
+    
+    $amount = (float) str_replace (['$', ','], '', $amount);
+    
+    return [
+        'date'          =>  $date,
+        'check'         =>  $check,
+        'description'   =>  $description,
+        'amount'        =>  $amount
+    ];
+    
 }
 
 function calculateTotals(array $transactions): array {

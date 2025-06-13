@@ -21,16 +21,12 @@ $transactions = [];
 
 foreach ($files as $file) {
     
-    if(!is_readable($file)) {
-    
-        trigger_error("Can't read the file: '$file'", E_USER_NOTICE);
+    if(!is_null($transaction = getTransactions($file, 'extractTransaction'))) {
         
-    } else {
-    
-        $transactions = array_merge($transactions, getTransactions($file));
-    
+        $transactions = array_merge($transactions, $transaction);
+        
     }
-    
+ 
 }
 vd($transactions, true);
     
