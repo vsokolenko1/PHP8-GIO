@@ -9,15 +9,56 @@ define('FILES_PATH', $root . 'transaction_files' . DIRECTORY_SEPARATOR);
 define('VIEWS_PATH', $root . 'views' . DIRECTORY_SEPARATOR);
 
 require_once APP_PATH . 'App.php';
+require_once APP_PATH . 'helpers.php';
 
-//Extensions our files
-$ext = 'csv';
+set_error_handler('errorHandler', E_ALL);
 
-//Array for store transactions
-$storage = array_fill_keys(['transactions', 'income', 'expense', 'profit'], 0);
+//1. Get file lists in directory 
+$files = getTransactionsFiles(FILES_PATH);
 
-$data = run($storage, $ext);
+//2. Get transactions from all files.
+$transactions = [];
 
-extract($data);
+foreach ($files as $file) {
+    
+    if(!is_readable($file)) {
+    
+        trigger_error("Can't read the file: '$file'", E_USER_NOTICE);
+        
+    } else {
+    
+        $transactions = array_merge($transactions, getTransactions($file));
+    
+    }
+    
+}
+vd($transactions, true);
+    
+    $totals = calculateTotals($transactions);
+    
+    
+    exit();
+    
+//    if(!is_null($data)) {
+//        
+//        $storage = [];
+//        
+//        //3. Transform & sava data to storage.
+//        $storage['transactions']   = saveData($data);
+//        
+////vd($storage['transactions'],false);
+//
+//        //4. Calculate different summ.
+//        $storage['income']         = getInfo($storage['transactions'], 'income');
+//        $storage['expense']        = getInfo($storage['transactions'], 'expense');
+//        $storage['profit']         = round($storage['income'] - abs($storage['expense']), 2, PHP_ROUND_HALF_DOWN);
+//
+//    } else {
+//        
+//        trigger_error("No data in the files", E_USER_WARNING);
+//        
+//    }
+//
+//extract($storage);
 //vd($profit);
 require_once VIEWS_PATH . 'transactions.php';
