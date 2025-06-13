@@ -45,10 +45,10 @@
                 <?php if (is_array($transactions) && !is_null($transactions)):?>
                     <?php foreach($transactions as $transaction):?>
                     <tr>
-                        <td><?= date('M j, Y',strtotime($transaction['date']))?></td>
+                        <td><?= formatDate($transaction['date'])?></td>
                         <td><?=$transaction['check']?></td>
                         <td><?=$transaction['description']?></td>
-                        <td class="<?=$transaction['amount'] > 0 ? 'positive' : 'negative'?>"><?=serviceTransformAmount($transaction['amount'])?></td>
+                        <td class="<?=$transaction['amount'] > 0 ? 'positive' : ($transaction['amount'] < 0 ? 'negative' : '')?>"><?=formatDollarAmount($transaction['amount'])?></td>
                     </tr>
                     <?php endforeach;?>
                 <?php endif?>
@@ -56,15 +56,15 @@
             <tfoot>
                 <tr>
                     <th colspan="3">Total Income:</th>
-                    <td><?=serviceTransformAmount($income)?></td>
+                    <td><?=formatDollarAmount($totalIncome)?></td>
                 </tr>
                 <tr>
                     <th colspan="3">Total Expense:</th>
-                    <td><?= serviceTransformAmount($expense)?></td>
+                    <td><?= formatDollarAmount($totalExpense)?></td>
                 </tr>
                 <tr>
                     <th colspan="3">Net Total:</th>
-                    <td><?=serviceTransformAmount($profit)?></td>
+                    <td><?=formatDollarAmount($netTotal)?></td>
                 </tr>
             </tfoot>
         </table>

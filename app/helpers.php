@@ -24,3 +24,17 @@ function vd(array|string $data, bool $visible = true): void
     echo '</pre>';
 }
 
+
+function formatDollarAmount(float $amount): string {
+    
+    $isNegative = $amount < 0;
+    
+    return ($isNegative ? '-' : '') . '$' . number_format(abs($amount), 2) ;
+    
+}
+
+function formatDate(string $date): string {
+    
+    return date('M j, Y', strtotime($date));
+    
+}

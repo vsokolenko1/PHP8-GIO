@@ -28,33 +28,11 @@ foreach ($files as $file) {
     }
  
 }
-vd($transactions, true);
+//vd($transactions, true);
     
-    $totals = calculateTotals($transactions);
+$totals = calculateTotals($transactions);
     
-    
-    exit();
-    
-//    if(!is_null($data)) {
-//        
-//        $storage = [];
-//        
-//        //3. Transform & sava data to storage.
-//        $storage['transactions']   = saveData($data);
-//        
-////vd($storage['transactions'],false);
-//
-//        //4. Calculate different summ.
-//        $storage['income']         = getInfo($storage['transactions'], 'income');
-//        $storage['expense']        = getInfo($storage['transactions'], 'expense');
-//        $storage['profit']         = round($storage['income'] - abs($storage['expense']), 2, PHP_ROUND_HALF_DOWN);
-//
-//    } else {
-//        
-//        trigger_error("No data in the files", E_USER_WARNING);
-//        
-//    }
-//
-//extract($storage);
-//vd($profit);
+extract($totals);
+    //formatDate
+    //formatDollarAmount
 require_once VIEWS_PATH . 'transactions.php';

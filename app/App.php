@@ -91,8 +91,25 @@ function extractTransaction (array $transactionRow): array {
 
 function calculateTotals(array $transactions): array {
     
+    $totals = ['netTotal' => 0, 'totalIncome' => 0, 'totalExpense' => 0];
     
-    return [];
+    foreach ($transactions as $transaction) {
+        
+        $totals['netTotal'] += $transaction['amount'];
+        
+        if ($transaction['amount'] >= 0 ) {
+            
+            $totals['totalIncome'] +=$transaction['amount'];
+            
+        } else {
+            
+            $totals['totalExpense'] +=$transaction['amount'];
+            
+        }
+        
+    }
+    
+    return $totals;
 }
 
 /**
@@ -122,62 +139,6 @@ function saveData (array $transactions): array {
     }
     
     return $data;
-}
-
-/**
- * Get sum of income, expense, profit
- * @param array $data
- * @param string|bool $operation
- * @return float
- */
-function getInfo(array $data, string|bool $operation = false): float {
-    
-    switch ($operation){
-        
-        case 'income':
-
-            $data = array_filter($data, function($var){
-
-                return $var['amount'] > 0 ? $var['amount'] : null;
-
-            });
-            break;
-        
-        case 'expense':
-            
-            $data = array_filter($data, function($var){
-
-                return $var['amount'] < 0 ? $var['amount'] : null;
-
-            });
-            break;
-        default :
-            break;
-   
-    }
-    
-    return round(__getSum($data), 2, PHP_ROUND_HALF_DOWN);
-}
-
-function serviceTransformAmount(float $num): string {
-    
-    return $num < 0 ? '-$' . abs($num) : '$' . $num;
-}
-
-/**
- * Get sum inner column of arrays
- * @param array $array
- * @return float
- */
-function __getSum (array $array): float {
-    
-    $summ = 0;
-    
-    foreach ($array as $row) {
-        $summ += $row['amount'];
-    }
-    
-    return $summ;    
 }
 
 function errorHandler(
